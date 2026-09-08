@@ -172,6 +172,18 @@ export async function launch(
     ignoreHTTPSErrors: true,
   };
 
+  // A same-machine test-profile copy can contain cookies encrypted with the
+  // user's real Chrome Safe Storage key. Patchright normally replaces the OS
+  // password store with a mock keychain, which makes those copied cookies
+  // unreadable and causes Chrome to discard them. Only an explicitly supplied
+  // --userDataDir opts into the real system password store; built-in, isolated,
+  // and Cloak profiles retain Patchright's safer default arguments.
+  const copiedProfileOptions = options.userDataDir
+    ? {
+        ignoreDefaultArgs: ['--password-store=basic', '--use-mock-keychain'],
+      }
+    : {};
+
   // --isolated mode: launch() + newContext() for clean isolated context.
   // Creates an incognito-like context with no persisted state.
   if (isolated) {
@@ -204,6 +216,7 @@ export async function launch(
       headless: false,
       chromiumSandbox: true,
       args,
+      ...copiedProfileOptions,
       ...contextOptions,
     });
 

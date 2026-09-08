@@ -31,6 +31,12 @@ export const cliOptions = {
       'Create a temporary user-data-dir that is auto-cleaned when the browser closes. Use this for runs where you do NOT want cookies/localStorage to persist into your default profile.',
     default: false,
   },
+  userDataDir: {
+    type: 'string',
+    description:
+      'Use a dedicated Chrome user-data root. This is intended for a test-profile copy; do not point it at the user-data root of a running daily Chrome instance.',
+    conflicts: ['browserUrl', 'cloak'],
+  },
   logFile: {
     type: 'string',
     describe:
@@ -60,6 +66,12 @@ export function parseArguments(version: string, argv = process.argv) {
   const yargsInstance = yargs(hideBin(argv))
     .scriptName('npx js-reverse-mcp@latest')
     .options(cliOptions)
+    .check(parsed => {
+      if (parsed.userDataDir && parsed.isolated) {
+        throw new Error('--userDataDir cannot be combined with --isolated.');
+      }
+      return true;
+    })
     .example([
       [
         '$0',
@@ -72,6 +84,10 @@ export function parseArguments(version: string, argv = process.argv) {
       [
         '$0 --isolated',
         'Run with a throwaway profile (no cookies/localStorage saved)',
+      ],
+      [
+        '$0 --userDataDir /path/to/chrome-test-profile',
+        'Launch system Chrome with a dedicated persistent user-data root',
       ],
       [
         '$0 --browserUrl http://127.0.0.1:9222',

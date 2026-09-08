@@ -248,6 +248,7 @@ CLI 保持精简，所有 flag 都是可选项。**99% 场景默认即可**。�
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | `--cloak`          | 切换到 CloakBrowser 隐身二进制（取代系统 Chrome）。启用按平台提供的 C++ 源码层指纹 patch。首次启动自动下载 ~200MB 二进制；指纹身份按 profile 持久化。详见 [docs/cloak.md](docs/cloak.md)。                                | `false` |
 | `--isolated`       | 使用临时 user-data-dir（cookies/localStorage 不保留，关闭时自动清理）                                                                                                                                                     | `false` |
+| `--userDataDir`    | 使用专用的持久化 Chrome user-data 根目录，例如 Chrome profile 的私有测试副本。不要指向正在运行的日常 Chrome user-data 根目录。与 `--isolated`、`--browserUrl` 和 `--cloak` 冲突。                                         | –       |
 | `--browserUrl, -u` | 连接到已运行的 Chrome 实例（CDP HTTP 端点，如 `http://127.0.0.1:9222`）。MCP 会自动探测出 WebSocket debugger URL。本地 Chrome、AdsPower、BitBrowser 等怎么拿到这个端点详见 [docs/cdp-endpoint.md](docs/cdp-endpoint.md)。 | –       |
 | `--logFile`        | 写入 `0600` 普通文件的 MCP 调试日志；详细日志仅使用 `DEBUG=mcp:*`。不要使用 `DEBUG=*`，浏览器协议日志可能泄露页面、Cookie、脚本和凭据。                                                                                   | –       |
 | `--allowedRoots`   | 可重复指定 Agent 允许读写的本地目录；解析真实路径并拒绝符号链接越界。启用时禁用 `file:`、`view-source:file:` 和 `filesystem:file:` 浏览器页面。未指定时本地文件访问不受目录限制，启动时会打印安全警告。                   | –       |
@@ -317,6 +318,27 @@ CLI 保持精简，所有 flag 都是可选项。**99% 场景默认即可**。�
   }
 }
 ```
+
+**专用测试 profile 副本**（持久保留 cookies、localStorage、IndexedDB 和扩展状态）：
+
+```json
+{
+  "mcpServers": {
+    "js-reverse-test-profile": {
+      "command": "npx",
+      "args": [
+        "js-reverse-mcp",
+        "--userDataDir",
+        "/absolute/path/to/chrome-test-profile"
+      ]
+    }
+  }
+}
+```
+
+Chrome 136 及以后会有意拒绝对平台默认 Chrome data 目录开启远程调试。请使用位于非默认路径的私有副本，并且不要让两个 Chrome 进程同时打开同一个 user-data 根目录。
+
+在 macOS 上，此模式使用 Chrome 的真实系统密码存储，以便同一台 Mac 上的 profile 副本可以解密其已有 Cookie。请将该副本视为包含凭据的私有数据，并确保只有当前用户可读。
 
 ### 连接到已运行的 Chrome / 第三方指纹浏览器
 

@@ -112,6 +112,7 @@ async function getContext(): Promise<McpContext> {
   } else {
     result = await ensureBrowserLaunched({
       isolated: args.isolated,
+      userDataDir: args.userDataDir,
       logFile,
       cloak: args.cloak,
     });

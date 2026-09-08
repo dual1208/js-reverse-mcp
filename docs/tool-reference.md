@@ -373,6 +373,10 @@ content is kept for human-readable compatibility.
   - **Type:** boolean
   - **Default:** `false`
 
+- **`--userDataDir`**
+  Use a dedicated Chrome user-data root. This is intended for a test-profile copy; do not point it at the user-data root of a running daily Chrome instance.
+  - **Type:** string
+
 - **`--logFile`**
   Path to a 0600 regular file for js-reverse-mcp debug logs. Use DEBUG=mcp:_ for verbose MCP logs; never use DEBUG=_ because browser protocol logs can contain page data, cookies, scripts, and credentials.
   - **Type:** string

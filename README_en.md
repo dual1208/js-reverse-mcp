@@ -248,6 +248,7 @@ The CLI stays intentionally small and every flag is optional. Default behavior i
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | `--cloak`          | Use CloakBrowser stealth-patched Chromium instead of system Chrome. Enables its platform-specific source-level fingerprint patches. Binary auto-downloads (~200MB) on first use. Identity is persisted per profile. See [docs/cloak.en.md](docs/cloak.en.md).                                         | `false` |
 | `--isolated`       | Use a temporary user data directory (cookies/localStorage not persisted, auto-cleaned on close)                                                                                                                                                                                                       | `false` |
+| `--userDataDir`    | Use a dedicated persistent Chrome user-data root, such as a private copy of a Chrome profile. Do not point it at the user-data root of a running daily Chrome instance. Conflicts with `--isolated`, `--browserUrl`, and `--cloak`.                                                                   | –       |
 | `--browserUrl, -u` | Connect to a running Chrome instance via CDP HTTP endpoint (e.g. `http://127.0.0.1:9222`). The MCP probes it to find the WebSocket debugger URL. See [docs/cdp-endpoint.en.md](docs/cdp-endpoint.en.md) for how to obtain this endpoint from local Chrome, AdsPower, BitBrowser, etc.                 | –       |
 | `--logFile`        | Write MCP diagnostics to a `0600` regular file. Use only `DEBUG=mcp:*` for verbose logs; never `DEBUG=*`, because browser protocol logs may expose page data, cookies, scripts, and credentials.                                                                                                      | –       |
 | `--allowedRoots`   | Repeatable list of local directories the Agent may read or write. Real paths are pinned and symlink escapes are rejected. While enabled, `file:`, `view-source:file:`, and `filesystem:file:` browser pages are disabled. If omitted, local-file access is unrestricted and startup prints a warning. | –       |
@@ -317,6 +318,27 @@ The CLI stays intentionally small and every flag is optional. Default behavior i
   }
 }
 ```
+
+**Dedicated test-profile copy** (persistent cookies, localStorage, IndexedDB, and extension state):
+
+```json
+{
+  "mcpServers": {
+    "js-reverse-test-profile": {
+      "command": "npx",
+      "args": [
+        "js-reverse-mcp",
+        "--userDataDir",
+        "/absolute/path/to/chrome-test-profile"
+      ]
+    }
+  }
+}
+```
+
+Chrome 136 and later intentionally reject remote debugging against the platform's default Chrome data directory. Use a private copy at a non-default path, and never let two Chrome processes open the same user-data root at once.
+
+On macOS, this mode uses Chrome's real system password store so a same-machine copy can decrypt its existing cookies. Treat the copied directory as credential-bearing private data and keep it readable only by your user.
 
 ### Connect to a Running Chrome / Third-Party Fingerprint Browser
 
