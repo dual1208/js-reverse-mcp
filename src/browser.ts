@@ -135,6 +135,8 @@ interface McpLaunchOptions {
   /** Internal profile-host options; ordinary MCP workers never launch Chrome. */
   remoteDebuggingPort?: number;
   headless?: boolean;
+  /** Only the owning profile host may install its configured extensions. */
+  enableExtensionDebugging?: boolean;
 }
 
 export async function launch(
@@ -172,6 +174,9 @@ export async function launch(
     //   correctly" bubble that appears whenever the MCP is killed/restarted.
     '--test-type',
     '--hide-crash-restore-bubble',
+    ...(options.enableExtensionDebugging
+      ? ['--enable-unsafe-extension-debugging']
+      : []),
     ...(options.remoteDebuggingPort === undefined
       ? []
       : [`--remote-debugging-port=${options.remoteDebuggingPort}`]),

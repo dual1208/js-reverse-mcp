@@ -11,7 +11,7 @@ A named collection of persistent browser state associated with a set of user act
 _Avoid_: Account, session
 
 **Cesar**:
-The browser identity for OpenRouter, X, Google services, and cloud or virtual-machine service providers.
+The browser identity for OpenCLI-indexed services, social media, OpenRouter, Google services, and cloud or virtual-machine service providers.
 
 **Tyson**:
 The browser identity for learning, practice, and general browsing outside Cesar's activities.

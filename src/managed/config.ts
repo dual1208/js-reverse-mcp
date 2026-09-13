@@ -18,6 +18,12 @@ export const configSchema = z.object({
   workerEntry: absolutePath,
   allowedRoots: z.array(absolutePath).min(1),
   profiles: z.object({cesar: absolutePath, tyson: absolutePath}),
+  profileExtensions: z
+    .object({
+      cesar: z.array(absolutePath).default([]),
+      tyson: z.array(absolutePath).default([]),
+    })
+    .optional(),
 });
 export type ManagerConfig = z.infer<typeof configSchema>;
 export interface ManagerRuntime {
@@ -29,6 +35,7 @@ export interface ProfileRuntime {
   pid: number;
   endpoint: string;
   startedAt: string;
+  extensions?: Array<{id: string; path: string}>;
 }
 
 export function configPath(): string {

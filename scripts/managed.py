@@ -133,7 +133,8 @@ def install(args):
         Path(root).mkdir(parents=True, exist_ok=True)
     private_json(CONFIG, {'version': 1, 'stateDir': str(STATE),
                           'workerEntry': str(release / 'build/src/index.js'),
-                          'allowedRoots': observations, 'profiles': profiles})
+                          'allowedRoots': observations, 'profiles': profiles,
+                          **({'profileExtensions': previous['profileExtensions']} if 'profileExtensions' in previous else {})})
     logs = STATE / 'logs'
     logs.mkdir(exist_ok=True, mode=0o700)
     for job in JOBS:

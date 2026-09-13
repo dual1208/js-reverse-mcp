@@ -43,7 +43,21 @@ test(
         cesar: path.join(folder, 'cesar'),
         tyson: path.join(folder, 'tyson'),
       },
+      profileExtensions: {
+        cesar: [path.join(folder, 'fixture-extension')],
+        tyson: [],
+      },
     };
+    const extensionPath = config.profileExtensions!.cesar[0];
+    mkdirSync(extensionPath);
+    writeFileSync(
+      path.join(extensionPath, 'manifest.json'),
+      JSON.stringify({
+        manifest_version: 3,
+        name: 'Managed fixture',
+        version: '1.0',
+      }),
+    );
     const configFile = path.join(folder, 'config.json');
     writePrivateJSON(configFile, config);
     const environment = Object.fromEntries(

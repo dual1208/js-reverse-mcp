@@ -167,3 +167,6 @@ AGENTS.md
 # Local links to canonical instructions and skills in agent-tool-routing.
 /agent-routing.md
 /skills/browse
+
+# Python maintenance helpers.
+__pycache__/

@@ -39,6 +39,18 @@ The menu is expanded by default: **profile → JS-Reverse instance → every att
 
 ## Installation and operation
 
+### OpenCLI on Cesar
+
+OpenCLI uses its Browser Bridge extension inside the same managed Cesar browser. Its local context ID is an extension identity, distinct from a CDP session or a JS-Reverse conversation. `opencli profile list` shows connected extension contexts; verify the context in Cesar's extension popup, name it with `opencli profile rename CONTEXT_ID cesar`, then set `opencli profile use cesar`. Use `--profile cesar` for commands that must fail rather than select another connected profile if Cesar is unavailable. The local zsh environment also sets `OPENCLI_PROFILE=cesar`: OpenCLI treats this as a required profile, while its saved default alone is a preference that can fall back to another connected profile.
+
+The manager config accepts `profileExtensions`, with `cesar` and `tyson` arrays of absolute unpacked-extension paths. The owning profile host loads these through its original Chrome debugging pipe, using `Extensions.loadUnpacked` and the required extension-debugging flag. That flag is enabled only for hosts with configured extensions. Installed Chrome and its existing launch settings remain in use. Reinstallation retains the configured paths; keep the extension files at those stable paths.
+
+OpenCLI controls its own adapter/browser tabs through `chrome.debugger`; those extension-owned attachments are outside the manager's JS-Reverse worker inventory. The two tools share site login state and browser effects. Keep separate working tabs and avoid operating both tools on the same tab at once.
+
+Check account readiness with `opencli --profile cesar auth status --site notebooklm,gemini,reddit,twitter,jimeng --full`. A navigation error is not a signed-out result: inspect the live page, then run the affected site's `whoami` command. Complete any actual login, MFA, or consent in the same Cesar browser. Cookies remain in Chrome.
+
+### Managed installation
+
 Requirements: macOS 14+, Xcode command-line toolchain with Swift 6, system Google Chrome, and this checkout's Node dependencies. Build and test before installing:
 
 ```sh
