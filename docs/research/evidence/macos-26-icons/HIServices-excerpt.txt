@@ -1,0 +1,17 @@
+Observed on macOS 26.5.2 (25F84), arm64e.
+HIServices UUID: 34C40608-353D-3A06-BBF1-6B927CB8B39D
+Read-only inspection command:
+xcrun dyld_info -disassemble /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/HIServices
+
+_CoreDockSetProcessImage:
+0x187BA5BAC   mov      w0, #-0x32
+0x187BA5BB0   ret
+_CoreDockCompositeProcessImage:
+0x187BA5BB4   mov      w0, #-0x32
+0x187BA5BB8   ret
+_CoreDockRestoreProcessImage:
+0x187BA5BBC   mov      w0, #-0x32
+0x187BA5BC0   ret
+
+All three immediately return -50; resolving these exported names is not evidence
+that they implement an icon operation on this build.

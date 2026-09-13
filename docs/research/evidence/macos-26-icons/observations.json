@@ -1,0 +1,37 @@
+{
+  "researchDate": "2026-09-12",
+  "macOS": "26.5.2",
+  "build": "25F84",
+  "architecture": "arm64e",
+  "chromeVersion": "153.0.8010.37",
+  "chromiumRevision": "b75a5a95ea1a1b55bdbfd6d9f42d47be7507fb8b",
+  "canonicalBrowserExecutable": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "HIServicesUUID": "34C40608-353D-3A06-BBF1-6B927CB8B39D",
+  "AppKitUUID": "C92CC156-D767-322B-B79B-433F56E72561",
+  "legacyCoreDockImageFunctions": "SetProcessImage, CompositeProcessImage, RestoreProcessImage immediately return -50 on this build",
+  "dockService": "com.apple.dock.server",
+  "messageId": "0x1791b",
+  "messageBytes": 80,
+  "probeTransportResults": [
+    {
+      "pid": 6636,
+      "psn": ["0x0", "0x3bb3bb"],
+      "returnCode": 0,
+      "requestedImage": "Calculator"
+    },
+    {
+      "pid": 6638,
+      "psn": ["0x0", "0x3bd3bd"],
+      "returnCode": 0,
+      "requestedImage": "TextEdit"
+    }
+  ],
+  "visualCmdTabConfirmed": false,
+  "productionChromeChanged": false,
+  "limitations": [
+    "One-way transport success is not visual confirmation.",
+    "Private protocol tested only on the recorded OS build.",
+    "NSRunningApplication.icon reads the bundle/file icon, not the dynamic Dock bitmap.",
+    "The sender refuses targets other than the exact temporary fixture executable."
+  ]
+}

@@ -1,0 +1,47 @@
+[
+  {
+    "activationPolicy": 0,
+    "bundleID": "com.google.Chrome",
+    "bundleURL": "\/Applications\/Google Chrome.app",
+    "executableURL": "\/Applications\/Google Chrome.app\/Contents\/MacOS\/Google Chrome",
+    "iconSHA256": "e6afd7c47ff89a02c4138408299334340cb9880f71d3d12d0d4630f99bebaabb",
+    "name": "Google Chrome",
+    "pid": 88513
+  },
+  {
+    "activationPolicy": 0,
+    "bundleID": "com.google.Chrome",
+    "bundleURL": "\/Applications\/Google Chrome.app",
+    "executableURL": "\/Applications\/Google Chrome.app\/Contents\/MacOS\/Google Chrome",
+    "iconSHA256": "e6afd7c47ff89a02c4138408299334340cb9880f71d3d12d0d4630f99bebaabb",
+    "name": "Google Chrome",
+    "pid": 950
+  },
+  {
+    "activationPolicy": 0,
+    "bundleID": "com.google.Chrome",
+    "bundleURL": "\/Applications\/Google Chrome.app",
+    "executableURL": "\/Applications\/Google Chrome.app\/Contents\/MacOS\/Google Chrome",
+    "iconSHA256": "e6afd7c47ff89a02c4138408299334340cb9880f71d3d12d0d4630f99bebaabb",
+    "name": "Google Chrome",
+    "pid": 2429
+  },
+  {
+    "activationPolicy": 0,
+    "bundleID": "local.js-reverse.icon-fixture",
+    "bundleURL": "\/tmp\/js-reverse-icon-research\/Icon Fixture.app",
+    "executableURL": "\/tmp\/js-reverse-icon-research\/Icon Fixture.app\/Contents\/MacOS\/IconFixture",
+    "iconSHA256": "139e5547edb128eb983c7bbe4f5ea725093a59b357ff11e309aca64ea6741cf9",
+    "name": "Icon research fixture",
+    "pid": 6636
+  },
+  {
+    "activationPolicy": 0,
+    "bundleID": "local.js-reverse.icon-fixture",
+    "bundleURL": "\/tmp\/js-reverse-icon-research\/Icon Fixture.app",
+    "executableURL": "\/tmp\/js-reverse-icon-research\/Icon Fixture.app\/Contents\/MacOS\/IconFixture",
+    "iconSHA256": "139e5547edb128eb983c7bbe4f5ea725093a59b357ff11e309aca64ea6741cf9",
+    "name": "Icon research fixture",
+    "pid": 6638
+  }
+]
