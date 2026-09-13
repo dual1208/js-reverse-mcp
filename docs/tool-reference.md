@@ -374,7 +374,7 @@ content is kept for human-readable compatibility.
   - **Default:** `false`
 
 - **`--userDataDir`**
-  Use a dedicated Chrome user-data root. This is intended for a test-profile copy; do not point it at the user-data root of a running daily Chrome instance.
+  Legacy direct launch uses the selected profile. Managed profile hosts use their registered persistent directories; managed workers connect through the CDP manager.
   - **Type:** string
 
 - **`--logFile`**

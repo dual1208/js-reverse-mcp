@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import {requireSelectedProfile} from './profilePolicy.js';
 import type {YargsOptions} from './third_party/index.js';
 import {yargs, hideBin} from './third_party/index.js';
 
@@ -34,7 +35,7 @@ export const cliOptions = {
   userDataDir: {
     type: 'string',
     description:
-      'Use a dedicated Chrome user-data root. This is intended for a test-profile copy; do not point it at the user-data root of a running daily Chrome instance.',
+      'Legacy direct launch uses the selected profile. Managed profile hosts use their registered persistent directories; managed workers connect through the CDP manager.',
     conflicts: ['browserUrl', 'cloak'],
   },
   logFile: {
@@ -67,6 +68,7 @@ export function parseArguments(version: string, argv = process.argv) {
     .scriptName('npx js-reverse-mcp@latest')
     .options(cliOptions)
     .check(parsed => {
+      requireSelectedProfile(parsed);
       if (parsed.userDataDir && parsed.isolated) {
         throw new Error('--userDataDir cannot be combined with --isolated.');
       }

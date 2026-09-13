@@ -10,6 +10,7 @@ import path from 'node:path';
 
 import {setupCloak} from './cloak.js';
 import {logger} from './logger.js';
+import {REQUIRED_PROFILE, requireSelectedProfile} from './profilePolicy.js';
 import {SingleFlight} from './SingleFlight.js';
 import type {Browser, BrowserContext} from './third_party/index.js';
 import {chromium} from './third_party/index.js';
@@ -39,14 +40,8 @@ const BROWSER_OCCUPIED_MESSAGE =
 // races and broken sessions. Pick the directory based on whether --cloak is
 // set; never share.
 //
-// NOTE: the default path is preserved across the chrome-devtools-mcp →
-// js-reverse-mcp rename so existing users keep their login state.
-const DEFAULT_USER_DATA_DIR = path.join(
-  os.homedir(),
-  '.cache',
-  'chrome-devtools-mcp',
-  'chrome-profile',
-);
+// Local default: the persistent profile selected with just.
+const DEFAULT_USER_DATA_DIR = REQUIRED_PROFILE;
 const DEFAULT_CLOAK_DATA_DIR = path.join(
   os.homedir(),
   '.cache',
@@ -71,15 +66,29 @@ export async function ensureBrowserConnected(options: {
     }
 
     // Resolve the WebSocket debugger URL from the CDP HTTP endpoint.
-    const url = new URL('/json/version', options.browserURL);
-    const res = await fetch(url.toString());
+    const url = new URL(
+      'json/version',
+      options.browserURL.endsWith('/')
+        ? options.browserURL
+        : `${options.browserURL}/`,
+    );
+    const token = process.env.JS_REVERSE_CONNECTION_TOKEN;
+    const headers = token ? {Authorization: `Bearer ${token}`} : undefined;
+    const res = await fetch(url.toString(), {
+      headers,
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!res.ok)
+      throw new Error(
+        `CDP endpoint returned ${res.status}; a managed disconnect requires explicit reconnection.`,
+      );
     const json = (await res.json()) as {webSocketDebuggerUrl: string};
     const endpoint = json.webSocketDebuggerUrl;
 
     logger('Connecting Patchright via resolved CDP WebSocket endpoint');
     let browser: Browser;
     try {
-      browser = await chromium.connectOverCDP(endpoint);
+      browser = await chromium.connectOverCDP(endpoint, {headers});
     } catch (error) {
       if (isBrowserOccupiedError(error)) {
         throw new Error(
@@ -123,11 +132,15 @@ interface McpLaunchOptions {
   isolated: boolean;
   logFile?: fs.WriteStream;
   cloak?: boolean;
+  /** Internal profile-host options; ordinary MCP workers never launch Chrome. */
+  remoteDebuggingPort?: number;
+  headless?: boolean;
 }
 
 export async function launch(
   options: McpLaunchOptions,
 ): Promise<BrowserResult> {
+  requireSelectedProfile(options);
   const {isolated} = options;
 
   // --cloak: resolve the CloakBrowser binary and fingerprint seed before
@@ -159,6 +172,9 @@ export async function launch(
     //   correctly" bubble that appears whenever the MCP is killed/restarted.
     '--test-type',
     '--hide-crash-restore-bubble',
+    ...(options.remoteDebuggingPort === undefined
+      ? []
+      : [`--remote-debugging-port=${options.remoteDebuggingPort}`]),
     ...(cloakSetup?.args ?? []),
   ];
 
@@ -176,13 +192,14 @@ export async function launch(
   // user's real Chrome Safe Storage key. Patchright normally replaces the OS
   // password store with a mock keychain, which makes those copied cookies
   // unreadable and causes Chrome to discard them. Only an explicitly supplied
-  // --userDataDir opts into the real system password store; built-in, isolated,
-  // and Cloak profiles retain Patchright's safer default arguments.
-  const copiedProfileOptions = options.userDataDir
-    ? {
-        ignoreDefaultArgs: ['--password-store=basic', '--use-mock-keychain'],
-      }
-    : {};
+  // --userDataDir and the local copied default use the real password store.
+  // Isolated and Cloak profiles retain Patchright's default arguments.
+  const copiedProfileOptions =
+    !isolated && !options.cloak
+      ? {
+          ignoreDefaultArgs: ['--password-store=basic', '--use-mock-keychain'],
+        }
+      : {};
 
   // --isolated mode: launch() + newContext() for clean isolated context.
   // Creates an incognito-like context with no persisted state.
@@ -190,7 +207,7 @@ export async function launch(
     const browser = await chromium.launch({
       channel,
       executablePath,
-      headless: false,
+      headless: options.headless ?? false,
       chromiumSandbox: true,
       args,
     });
@@ -213,7 +230,7 @@ export async function launch(
     const context = await chromium.launchPersistentContext(userDataDir, {
       channel,
       executablePath,
-      headless: false,
+      headless: options.headless ?? false,
       chromiumSandbox: true,
       args,
       ...copiedProfileOptions,
