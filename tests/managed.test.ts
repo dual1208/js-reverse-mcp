@@ -28,6 +28,19 @@ test('profile policy uses service boundaries, explicit choice and purpose fallba
     'https://console.cloud.google.com',
     'https://my.vultr.com',
     'https://x.com',
+    'https://www.facebook.com/',
+    'https://www.reddit.com/',
+    'https://jimeng.jianying.com/',
+    'https://gemini.google.com/',
+    'https://notebook.google.com/',
+    'https://www.instagram.com/',
+    'https://threads.net/',
+    'https://bsky.app/',
+    'https://arxiv.org/',
+    'https://pubmed.ncbi.nlm.nih.gov/',
+    'https://www.linkedin.com/learning/',
+    'https://study.xiaoe-tech.com/',
+    'https://api.dictionaryapi.dev/',
   ]) {
     assert.equal(
       chooseProfile({purpose: 'service task', url}).profile,
@@ -38,6 +51,10 @@ test('profile policy uses service boundaries, explicit choice and purpose fallba
     'https://grementor.ets.org',
     'https://openrouter.ai.example.org',
     'https://example.org/?next=google.com',
+    'https://facebook.com.example.org/',
+    'https://fakefacebook.com/',
+    'https://facebook.com@example.org/',
+    'https://example.org/reddit.com',
   ]) {
     assert.equal(chooseProfile({purpose: 'browse', url}).profile, 'tyson');
   }
@@ -52,6 +69,30 @@ test('profile policy uses service boundaries, explicit choice and purpose fallba
   assert.equal(
     chooseProfile({purpose: 'practice', service: 'learning'}).profile,
     'tyson',
+  );
+  for (const service of ['social', 'opencli'] as const) {
+    assert.equal(
+      chooseProfile({
+        purpose: 'new service',
+        service,
+        url: 'https://unknown.example/',
+      }).profile,
+      'cesar',
+    );
+    assert.equal(
+      chooseProfile({purpose: 'explicit exception', service, profile: 'tyson'})
+        .profile,
+      'tyson',
+    );
+  }
+  assert.equal(
+    chooseProfile({
+      purpose: 'research reading',
+      service: 'learning',
+      url: 'https://arxiv.org/',
+    }).profile,
+    'cesar',
+    'An indexed service overrides the general learning classification for a new activity',
   );
   assert.equal(
     chooseProfile({

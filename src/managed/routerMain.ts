@@ -20,7 +20,7 @@ const server = new McpServer(
   {name: 'js-reverse', version: '4.0.1'},
   {
     instructions:
-      'Start with select_browser. Keep its browserSession for a bounded browsing activity and pass it to every browser tool. Keep conversationId for this conversation only. Profile policy chooses Cesar for known Google/OpenRouter/X/cloud services and Tyson by default; classify unknown cloud providers using service. Login redirects retain the existing binding. Reconnect a manually disconnected instance only when the user requests it. Browser and debugger IDs belong to the selected worker.\n\n' +
+      'Start with select_browser. Keep its browserSession for a bounded browsing activity and pass it to every browser tool. Keep conversationId for this conversation only. Profile policy chooses Cesar for OpenCLI-listed services, social media, Google/OpenRouter/cloud services and Tyson by default. Classify OpenCLI activities as opencli, social media as social, and unknown cloud providers as cloud. Login redirects retain the existing binding. Reconnect a manually disconnected instance only when the user requests it. Browser and debugger IDs belong to the selected worker.\n\n' +
       SERVER_INSTRUCTIONS,
   },
 );
@@ -61,10 +61,19 @@ server.registerTool(
           'Initial service URL used for policy selection. Does not navigate.',
         ),
       service: z
-        .enum(['general', 'learning', 'cloud', 'google', 'openrouter', 'x'])
+        .enum([
+          'general',
+          'learning',
+          'cloud',
+          'google',
+          'openrouter',
+          'x',
+          'social',
+          'opencli',
+        ])
         .default('general')
         .describe(
-          'Classify the activity; cloud includes any VM or cloud provider, even an unknown domain.',
+          'Classify the activity. OpenCLI adapters, social media, and any VM/cloud provider use Cesar, including unknown service domains.',
         ),
       profile: z
         .enum(['auto', 'cesar', 'tyson'])

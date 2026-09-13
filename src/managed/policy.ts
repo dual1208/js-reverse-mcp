@@ -4,10 +4,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import type {ProfileName} from './config.js';
+import opencli from './opencli-services.json' with {type: 'json'};
 
 // Match registrable service hosts and their subdomains, never URL substrings.
 // Purpose classification covers providers not yet in this deterministic list.
 const cesarDomains = [
+  ...new Set(Object.values(opencli.adapters).flat()),
   'openrouter.ai',
   'x.com',
   'twitter.com',
@@ -35,7 +37,15 @@ export interface RouteRequest {
   profile?: ProfileName | 'auto';
   url?: string;
   purpose: string;
-  service?: 'general' | 'learning' | 'cloud' | 'google' | 'openrouter' | 'x';
+  service?:
+    | 'general'
+    | 'learning'
+    | 'cloud'
+    | 'google'
+    | 'openrouter'
+    | 'x'
+    | 'social'
+    | 'opencli';
 }
 
 export function chooseProfile(request: RouteRequest): {
@@ -63,7 +73,9 @@ export function chooseProfile(request: RouteRequest): {
   }
   if (
     request.service &&
-    ['cloud', 'google', 'openrouter', 'x'].includes(request.service)
+    ['cloud', 'google', 'openrouter', 'x', 'social', 'opencli'].includes(
+      request.service,
+    )
   ) {
     return {
       profile: 'cesar',
