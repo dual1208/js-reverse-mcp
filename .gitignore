@@ -163,3 +163,7 @@ log.txt
 CLAUDE.md
 AGENTS.md
 .codex/
+
+# Local links to canonical instructions and skills in agent-tool-routing.
+/agent-routing.md
+/skills/browse
