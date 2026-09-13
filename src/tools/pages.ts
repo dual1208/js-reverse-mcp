@@ -184,9 +184,12 @@ export const newPage = defineTool({
     // If a blank tab is still around (either the startup one or an explicitly
     // requested one), navigate it in place instead of opening another tab —
     // avoids the "two about:blank" UX on first MCP tool call.
-    const existingBlank = context
-      .getPages()
-      .find(p => p.url() === 'about:blank');
+    // A managed browser has several owners. Only this worker's selected blank
+    // can be reused; another worker may be about to navigate its own blank tab.
+    const blankCandidates = process.env.JS_REVERSE_CONNECTION_TOKEN
+      ? [context.getSelectedPage()]
+      : context.getPages();
+    const existingBlank = blankCandidates.find(p => p.url() === 'about:blank');
     const page = existingBlank ?? (await context.newPage());
     if (existingBlank) {
       await context.selectPage(existingBlank);

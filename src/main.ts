@@ -31,6 +31,7 @@ import {
 import {McpContext} from './McpContext.js';
 import {McpResponse} from './McpResponse.js';
 import {Mutex} from './Mutex.js';
+import {SERVER_INSTRUCTIONS} from './serverInstructions.js';
 import {
   McpServer,
   StdioServerTransport,
@@ -39,20 +40,11 @@ import {
 } from './third_party/index.js';
 import {runAbortableOperation} from './ToolCallRunner.js';
 import {normalizeToolError} from './ToolError.js';
-import * as consoleTools from './tools/console.js';
-import * as debuggerTools from './tools/debugger.js';
-import * as frameTools from './tools/frames.js';
-import * as interactionTools from './tools/interaction.js';
-import * as networkTools from './tools/network.js';
-import * as pagesTools from './tools/pages.js';
-import * as screenshotTools from './tools/screenshot.js';
-import * as scriptTools from './tools/script.js';
-import * as siteDataTools from './tools/siteData.js';
+import {tools} from './tools/catalog.js';
 import {
   TOOL_OUTPUT_SCHEMA,
   type ToolDefinition,
 } from './tools/ToolDefinition.js';
-import * as websocketTools from './tools/websocket.js';
 
 // Read the version from package.json at runtime so it never drifts from the
 // published package. Releases here are driven by `npm version` + a git tag, not
@@ -65,12 +57,6 @@ const VERSION = (
     ),
   ) as {version: string}
 ).version;
-
-const SERVER_INSTRUCTIONS = `Use purpose-built tools for network, source, debugger, and browser-state evidence. Use evaluate_script directly for requested DOM/page state, web storage, page-defined globals, paused-frame expressions, or browser-side local-file processing when no narrower tool applies. Reuse returned IDs only within each tool's documented lifetime; prefer a script URL because scriptId expires on reload, navigation, or debugger frame/target change.
-
-For captured HTTP/API traffic, redirects, HTTP authentication flows, or cookie provenance, start with list_network_requests. To find where an exact cookie was created, refreshed, rotated, overwritten, or deleted—including HttpOnly, Secure, and SameSite cookies—call list_network_requests with cookieName. Then inspect the returned reqid or export outputPart="responseHeaders" for complete Set-Cookie values and attributes. Use get_request_initiator on a captured reqid to locate client-side JavaScript that initiated that request, if any. Initiator CDP data is not retroactive: if an older reqid has no initiator, reproduce the action after network capability is active and inspect the new reqid, or set break_on_xhr before reproduction. If runtime arguments or local variables are still needed, set break_on_xhr with a narrow URL substring, reproduce the request, inspect get_paused_info, optionally evaluate in the paused frame, and explicitly resume execution.
-
-For code discovery, use search_in_sources when you know text and list_scripts when you do not; read a bounded region with get_script_source or save a complete/minified source with save_script_source. Use get_websocket_messages for WebSocket frames rather than the HTTP upgrade request. WebSocket frame capture is not retroactive: call get_websocket_messages once before reloading or reproducing an already-finished socket flow because earlier frames cannot be recovered. Select the correct page before page-scoped work. Select a frame for iframe-specific source, debugger, evaluate, or click work; network and cookie evidence is page-scoped and does not require frame selection. Prefer click_element for one known interaction. For code evaluation, clicks, deletion of state/evidence, or breakpoint removal, set confirm=true only when the user explicitly authorizes that specific effect; otherwise request confirmation.`;
 
 export const args = parseArguments(VERSION);
 configureAllowedRoots(args.allowedRoots);
@@ -121,6 +107,13 @@ async function getContext(): Promise<McpContext> {
   if (!context || context.browserContext !== result.context) {
     context?.dispose();
     context = await McpContext.from(result.context, logger);
+    if (process.env.JS_REVERSE_CONNECTION_TOKEN) {
+      // A conversation's initial selection must never borrow another worker's tab.
+      await context.newPage();
+      result.browser?.once('disconnected', () =>
+        requestShutdown('Managed CDP connection ended', 0),
+      );
+    }
   }
   return context;
 }
@@ -252,33 +245,6 @@ function registerTool(tool: ToolDefinition): void {
     },
   );
 }
-
-const tools = [
-  ...Object.values(consoleTools),
-  ...Object.values(debuggerTools),
-  ...Object.values(frameTools),
-  ...Object.values(interactionTools),
-  ...Object.values(networkTools),
-  ...Object.values(pagesTools),
-  ...Object.values(screenshotTools),
-  ...Object.values(scriptTools),
-  ...Object.values(siteDataTools),
-
-  ...Object.values(websocketTools),
-].filter(tool => {
-  return (
-    typeof tool === 'object' &&
-    tool !== null &&
-    'name' in tool &&
-    'handler' in tool &&
-    'schema' in tool &&
-    'annotations' in tool
-  );
-}) as unknown as ToolDefinition[];
-
-tools.sort((a, b) => {
-  return a.name.localeCompare(b.name);
-});
 
 let shuttingDown = false;
 
