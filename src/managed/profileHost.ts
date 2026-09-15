@@ -9,6 +9,7 @@ import path from 'node:path';
 import {closeBrowserResult, launch} from '../browser.js';
 
 import {profileNames, readConfig, writePrivateJSON} from './config.js';
+import {bindServiceLifetime} from './serviceLifetime.js';
 
 const name = profileNames.find(value => value === process.argv[2]);
 if (!name) throw new Error('Expected profile name cesar or tyson');
@@ -73,12 +74,7 @@ async function stop(): Promise<void> {
   clearTimeout(deadline);
   process.exit(0);
 }
-process.on('SIGTERM', () => {
-  void stop();
-});
-process.on('SIGINT', () => {
-  void stop();
-});
+bindServiceLifetime(stop);
 result.context.on('close', () => {
   void stop();
 });

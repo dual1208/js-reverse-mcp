@@ -7,6 +7,7 @@ import {rmSync} from 'node:fs';
 
 import {readConfig, runtimePath, writePrivateJSON} from './config.js';
 import {ConnectionManager} from './manager.js';
+import {bindServiceLifetime} from './serviceLifetime.js';
 
 const config = readConfig();
 const manager = new ConnectionManager(config);
@@ -25,9 +26,4 @@ async function stop(): Promise<void> {
   await manager.close();
   process.exit(0);
 }
-process.on('SIGTERM', () => {
-  void stop();
-});
-process.on('SIGINT', () => {
-  void stop();
-});
+bindServiceLifetime(stop);

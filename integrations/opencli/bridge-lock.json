@@ -1,0 +1,15 @@
+{
+  "repository": "jackwener/OpenCLI",
+  "revision": "8271afc67e8504bda94c147f446ee29775d08274",
+  "version": "1.0.24",
+  "files": {
+    "manifest.json": "c05c4695ad601f02fe7167be2cb826806b6ec5c49860841546fb08eda1f2c243",
+    "dist/background.js": "5cd35c1d6e060c463567a767b3a09d19d85d4a144ff4a3edbd74497c6410117d",
+    "popup.html": "37215847a4be981631c457678a1125f44ba8d2d1859973290f2bfc1e01b35a9d",
+    "popup.js": "e2422dafc81ea9c83d5d6b483dd6ad08c84ffcc922a46be4cd64b95e23e3c3b3",
+    "icons/icon-16.png": "41f055dfbcfa48a06d81c2733d686a39ab6c4aae3efa1e26247dddf4fa00ec95",
+    "icons/icon-32.png": "415856e54bd712b13bc369b404cc0676080ad9fe5836bd82f5e066097ebc33e7",
+    "icons/icon-48.png": "60a028b636ae832d995158ecec742c47cad7784187ab06108410154194217184",
+    "icons/icon-128.png": "4b146c873a1f6e21f129e9d9ad7a6e56d48f64f536ef160468e967f265c424a4"
+  }
+}

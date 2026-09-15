@@ -22,3 +22,26 @@ jobs:
 
       - run: npm ci
       - run: npm run presubmit
+
+  portable-browsers:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.12.0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - run: python -m unittest discover -s tests/deployment -v
+        env:
+          JS_REVERSE_INTEGRATION: '1'
+      - run: node --test build/tests/managed.integration.test.js
+        env:
+          JS_REVERSE_INTEGRATION: '1'

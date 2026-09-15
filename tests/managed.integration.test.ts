@@ -90,7 +90,7 @@ test(
           path.resolve(import.meta.dirname, '../src/managed/profileHost.js'),
           name,
         ],
-        {env, stdio: 'ignore'},
+        {env, stdio: ['ignore', 'ignore', 'ignore', 'ipc']},
       );
     });
     const manager = new ConnectionManager(config);
@@ -312,7 +312,7 @@ test(
         hosts.map(async host => {
           if (host.exitCode !== null) return;
           const exited = once(host, 'exit');
-          host.kill('SIGTERM');
+          host.send('shutdown');
           const timeout = setTimeout(() => host.kill('SIGKILL'), 5_000);
           await exited;
           clearTimeout(timeout);
