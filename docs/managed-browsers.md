@@ -1,5 +1,9 @@
 # Managed profile browsers
 
+For cross-platform setup, Chrome dependencies, and OpenCLI, start with the
+[deployment guide](deployment.md). The macOS installer now consumes shared release
+preparation from `scripts/browser_services/`; launchd/signing lives in `macos/manage.py`.
+
 The accepted decision is [ADR 0001](adr/0001-shared-profile-browsers.md). Domain terms are defined in [CONTEXT.md](../CONTEXT.md).
 
 ```mermaid

@@ -31,3 +31,9 @@ cesar:
 
 tyson:
     @just switch tyson
+
+managed-prepare:
+    python3 scripts/managed.py prepare --with-opencli
+
+managed-serve:
+    python3 scripts/managed.py serve

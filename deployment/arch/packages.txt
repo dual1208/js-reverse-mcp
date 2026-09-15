@@ -1,0 +1,8 @@
+# Official pacman packages used by this repository and the Chrome AUR build.
+base-devel
+git
+nodejs
+npm
+python
+# Google Chrome itself is google-chrome in the AUR, not in the official repos.
+# See docs/deployment.md for the reviewed makepkg -si / pacman installation path.

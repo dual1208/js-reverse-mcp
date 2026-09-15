@@ -24,3 +24,34 @@ Verified locally on 2026-09-12 with macOS, Chrome 153.0.8010.37, Patchright 1.58
 The disposable headless test does not establish website-specific anti-bot behavior, login validity, subscription status, or execution isolation between workers deliberately controlling the same target. The gateway inventories managed JS-Reverse connections; raw CDP clients outside it have no conversation attribution in this tree.
 
 See [operation and recovery](managed-browsers.md) and [the accepted ADR](adr/0001-shared-profile-browsers.md).
+
+## Portable releases and OpenCLI — 2026-09-14
+
+Local verification in this checkout on macOS:
+
+- `npm run presubmit`: 123 tests passed, one opt-in browser test skipped;
+  type/format checks, 24-tool documentation checks, 30 routing cases and package
+  dry-run passed. Production audit reported no high/critical advisories; the two
+  existing moderate advisories remain. OpenCLI's YAML dependency is locked to the
+  compatible fixed 4.3.2 release.
+- With `JS_REVERSE_INTEGRATION=1`, the Python deployment suite passed all 11 tests.
+  It includes real Chrome cleanup after manager failure and abrupt supervisor
+  death, rejection of a second supervisor, immutable-release/configuration checks,
+  bridge checksums, and a macOS adapter fixture inspecting its generated plists.
+  The launchd/signing commands in that adapter fixture are substituted; it does
+  not replace the earlier native menu evidence.
+- The separate real Chrome MCP integration passed with two disposable browser
+  profiles, three workers, retained bindings, per-worker cleanup and native
+  download directory/name/collision behavior.
+- A fresh disposable release actually ran production `npm ci`, fetched and
+  hash-verified the pinned Browser Bridge assets, and ran OpenCLI 1.8.7 from its
+  own dependencies. No dependency directory points back into this checkout.
+- The local wrapper's `doctor` reached the existing Cesar extension (1.0.24) and
+  OpenCLI daemon (1.8.7). The bridge provisioner also verified and retained the
+  existing extension directory. No new site authentication claim is inferred
+  from this connectivity check.
+
+The CI workflow now includes Windows, Linux and macOS headless Chrome/deployment
+jobs. This local record does not claim those runners passed, that installation
+was attempted on an Arch workstation, or that a Wayland GUI was visually tested.
+The live personal launchd browsers were not redeployed during this refactor.

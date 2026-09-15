@@ -1,5 +1,8 @@
 # JS Reverse MCP
 
+> This fork: [deploy managed profiles and OpenCLI on Windows, Wayland or macOS](docs/deployment.md).
+> [Architecture decision](docs/adr/0002-portable-hosting-and-opencli.md) · [browser ownership and menu](docs/managed-browsers.md).
+
 English | [中文](README.md)
 
 An AI-first / AI-native JavaScript reverse engineering MCP server that lets coding assistants (Claude, Cursor, Copilot) debug, locate, save, and replay JavaScript behavior in real web pages like an analyst.

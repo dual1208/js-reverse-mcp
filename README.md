@@ -1,5 +1,8 @@
 # JS Reverse MCP
 
+> This fork: [deploy managed profiles and OpenCLI on Windows, Wayland or macOS](docs/deployment.md).
+> [Architecture decision](docs/adr/0002-portable-hosting-and-opencli.md) · [browser ownership and menu](docs/managed-browsers.md).
+
 [English](README_en.md) | 中文
 
 AI-first / AI-native 的 JavaScript 逆向工程 MCP Server，让你的 AI 编码助手（如 Claude、Cursor、Copilot）能够像分析师一样持续调试、定位、保存和复盘网页中的 JavaScript 行为。
