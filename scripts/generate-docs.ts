@@ -5,9 +5,14 @@
  */
 
 import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 import {Client} from '@modelcontextprotocol/sdk/client/index.js';
-import {StdioClientTransport} from '@modelcontextprotocol/sdk/client/stdio.js';
+import {
+  getDefaultEnvironment,
+  StdioClientTransport,
+} from '@modelcontextprotocol/sdk/client/stdio.js';
 import type {Tool} from '@modelcontextprotocol/sdk/types.js';
 import prettier from 'prettier';
 
@@ -140,10 +145,16 @@ function updateReadmeToolCount(filePath: string, toolCount: number): void {
 async function generateToolDocumentation(): Promise<void> {
   console.log('Starting MCP server to query tool definitions...');
 
-  // Create MCP client with stdio transport pointing to the built server
+  // Schema queries never launch Chrome. Give legacy startup validation its own
+  // disposable marker instead of depending on a contributor's browser identity.
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'js-reverse-docs-'));
+  const profile = path.join(home, '.local/share/js-reverse-mcp/active-profile');
+  fs.mkdirSync(path.join(profile, 'Default'), {recursive: true});
+  fs.writeFileSync(path.join(profile, 'Default/Preferences'), '{}');
   const transport = new StdioClientTransport({
-    command: 'node',
+    command: process.execPath,
     args: [MCP_SERVER_PATH],
+    env: {...getDefaultEnvironment(), HOME: home, USERPROFILE: home},
   });
 
   const client = new Client(
@@ -312,6 +323,8 @@ content is kept for human-readable compatibility.
     console.error('Error generating documentation:', error);
     await client.close().catch(() => undefined);
     throw error;
+  } finally {
+    fs.rmSync(home, {recursive: true, force: true});
   }
 }
 
