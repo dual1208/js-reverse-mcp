@@ -108,6 +108,12 @@ _Avoid_: Debugger, profile router
 A browser connection whose lifecycle and owner are known to the connection manager.
 _Avoid_: All browser connections when unmanaged clients may also exist
 
+**OpenCLI browser context**:
+The browser identity exposed to OpenCLI by one Browser Bridge installation. Its
+alias identifies a browser to OpenCLI independently of JS-Reverse browser session
+handles and CDP session IDs.
+_Avoid_: JS-Reverse worker, conversation
+
 **Disconnect**:
 The end of a client's connection to the browser. It is distinct from closing a target, stopping the browser, or deleting its persistent state.
 _Avoid_: Close browser, delete profile
