@@ -83,6 +83,56 @@ The old `just cesar`, `just tyson` and global switching script refuse to switch 
 
 ## Verification and recovery
 
+### Native Chrome downloads and local HTTP
+
+Downloads follow each Chrome profile's **Settings → Downloads**, including the
+folder, prompting, original filenames and Chrome's existing `(1)`, `(2)` collision
+handling. They remain on disk when a worker disconnects. No agent download folder
+is hard-coded. On this Mac both profiles currently resolve to `/Users/ielts/Downloads`.
+
+`src/third_party/nativeChromeDownloads.ts` selects Patchright's internal
+`internal-browser-default` mode before a persistent browser context is initialized,
+on both host launch and worker CDP attachment. Patchright's public API exposes only
+accept/deny; its normal default installs an `allowAndName` download delegate with a
+temporary directory and UUID filenames. Resetting that delegate afterward with
+`Browser.setDownloadBehavior(default)` crashed the existing Cesar profile on Chrome
+153.0.8010.37. Leaving the native delegate in place passed actual duplicate-download
+checks in Cesar and Tyson. Patchright is pinned to the already installed 1.58.2;
+revalidate this small compatibility adapter and the browser integration test before
+upgrading it. No installed dependency files are modified.
+
+The macOS user's `com.google.Chrome` preferences contain the recommended policy:
+
+```json
+{"HttpAllowlist": ["[*.]mini", "[*.]lan", "[*.]gpu"]}
+```
+
+Both managed browsers recognize it as **Platform / Current user / Recommended / OK**
+in `chrome://policy`. This macOS user setting also applies to other Google Chrome
+profiles for the same user. It does not change explicit HTTPS URLs or HSTS. Existing
+launch flags remain unchanged, including Patchright's pre-existing global
+`HttpsUpgrades` disable flag; this change does not claim to restore global HTTPS
+upgrade protection. The allowlist also applies to HTTPS-First warnings, independently
+of that flag.
+
+To inspect or restore the local policy (quote the entire property-list array):
+
+```sh
+defaults read com.google.Chrome HttpAllowlist
+defaults write com.google.Chrome HttpAllowlist '("[*.]mini", "[*.]lan", "[*.]gpu")'
+```
+
+Reload `chrome://policy` and restart the managed browsers if the setting has not
+appeared. The original key was absent; `defaults delete com.google.Chrome HttpAllowlist`
+undoes this addition. Its before-state is saved in the manager's
+`backups/chrome-settings-20260913T102219Z/HttpAllowlist-before.json`.
+
+References: [Chrome's macOS policy setup](https://www.chromium.org/administrators/mac-quick-start/),
+[HttpAllowlist definition](https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/HttpAllowlist.yaml),
+and [Chrome 153's DevTools download delegate](https://github.com/chromium/chromium/blob/153.0.8010.37/content/browser/devtools/protocol/devtools_download_manager_delegate.cc).
+
+### Runtime checks
+
 `launchctl print gui/$(id -u)/local.js-reverse.chrome-cesar` shows the profile host job; repeat for the other labels. Logs are in `~/.local/share/js-reverse-manager/logs/`. Compare the actual Chrome command line's `--user-data-dir` against the private configuration. A menu heartbeat only proves the manager is reachable; a tool evaluation proves a worker reaches Chrome.
 
 The integration test creates disposable headless user data directories and actually drives three MCP workers through two Chrome hosts. It verifies conversation tab selection, profile policy, OAuth binding retention, attachment inventory, detachment, revocation, explicit reconnect, and browser survival after all MCP clients close. This does not establish website-specific anti-bot behavior or verify any account subscription/login.

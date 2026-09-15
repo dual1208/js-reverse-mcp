@@ -6,7 +6,14 @@
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {once} from 'node:events';
-import {mkdirSync, mkdtempSync, rmSync, writeFileSync} from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {test} from 'node:test';
@@ -72,7 +79,11 @@ test(
     };
     const hosts = Object.entries(config.profiles).map(([name, root]) => {
       mkdirSync(path.join(root, 'Default'), {recursive: true});
-      writeFileSync(path.join(root, 'Default/Preferences'), '{}');
+      const downloads = path.join(folder, `${name}-downloads`);
+      mkdirSync(downloads);
+      writePrivateJSON(path.join(root, 'Default/Preferences'), {
+        download: {default_directory: downloads, prompt_for_download: false},
+      });
       return spawn(
         process.execPath,
         [
@@ -207,6 +218,35 @@ test(
       }
       const isolated = await evaluate(0, '() => document.title');
       assert.match(JSON.stringify(isolated), /Managed fixture 0/);
+      // Each connection used to replace Chrome's settings with its own temp
+      // directory and UUID names. Exercise actual downloads after all workers
+      // attach, including a collision between two workers sharing Cesar.
+      const downloaded: string[] = [];
+      for (let i = 0; i < 3; i++) {
+        const result = await evaluate(
+          i,
+          `() => {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob(['native Chrome download\\n'], {type: 'text/plain'}));
+            a.download = 'native-download.txt';
+            document.body.append(a);
+            a.click();
+            return true;
+          }`,
+        );
+        assert.ok(!result.isError, JSON.stringify(result));
+        const file = path.join(
+          folder,
+          `${i === 2 ? 'tyson' : 'cesar'}-downloads`,
+          i === 1 ? 'native-download (1).txt' : 'native-download.txt',
+        );
+        const deadline = Date.now() + 15_000;
+        while (!existsSync(file) && Date.now() < deadline) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        assert.equal(readFileSync(file, 'utf8'), 'native Chrome download\n');
+        downloaded.push(file);
+      }
       const sticky = await tool(clients[1], 'select_browser', {
         browserSession: bindings[2].browserSession,
         purpose: 'OAuth callback for IELTS',
@@ -258,6 +298,13 @@ test(
         profileRuntime(config, 'cesar') && profileRuntime(config, 'tyson'),
         'Chrome outlives the MCP clients',
       );
+      for (const file of downloaded) {
+        assert.equal(
+          readFileSync(file, 'utf8'),
+          'native Chrome download\n',
+          'User downloads survive worker disconnection',
+        );
+      }
     } finally {
       await Promise.allSettled(clients.map(client => client.close()));
       await manager.close();

@@ -6,6 +6,7 @@
 
 import 'core-js/modules/es.promise.with-resolvers.js';
 import 'core-js/proposals/iterator-helpers.js';
+import './nativeChromeDownloads.js';
 
 export type {Options as YargsOptions} from 'yargs';
 export {default as yargs} from 'yargs';
