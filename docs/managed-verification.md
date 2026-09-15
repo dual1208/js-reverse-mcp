@@ -29,7 +29,7 @@ See [operation and recovery](managed-browsers.md) and [the accepted ADR](adr/000
 
 Local verification in this checkout on macOS:
 
-- `npm run presubmit`: 123 tests passed, one opt-in browser test skipped;
+- `npm run presubmit`: 124 tests passed, one opt-in browser test skipped;
   type/format checks, 24-tool documentation checks, 30 routing cases and package
   dry-run passed. Production audit reported no high/critical advisories; the two
   existing moderate advisories remain. OpenCLI's YAML dependency is locked to the
@@ -51,7 +51,10 @@ Local verification in this checkout on macOS:
   existing extension directory. No new site authentication claim is inferred
   from this connectivity check.
 
-The CI workflow now includes Windows, Linux and macOS headless Chrome/deployment
-jobs. This local record does not claim those runners passed, that installation
-was attempted on an Arch workstation, or that a Wayland GUI was visually tested.
-The live personal launchd browsers were not redeployed during this refactor.
+The Windows, Linux and macOS headless Chrome/deployment jobs also passed in
+[GitHub Actions](https://github.com/dual1208/js-reverse-mcp/actions/runs/34937357051).
+That initial run exposed an unrelated full-suite dependency on this Mac's legacy
+profile; the CLI tests now create a disposable home and explicitly verify rejection
+of a missing profile. No installation was attempted on an Arch workstation, and
+no Wayland GUI was visually tested. The live personal launchd browsers were not
+redeployed during this refactor.
