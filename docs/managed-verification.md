@@ -54,7 +54,9 @@ Local verification in this checkout on macOS:
 The Windows, Linux and macOS headless Chrome/deployment jobs also passed in
 [GitHub Actions](https://github.com/dual1208/js-reverse-mcp/actions/runs/34937357051).
 That initial run exposed an unrelated full-suite dependency on this Mac's legacy
-profile; the CLI tests now create a disposable home and explicitly verify rejection
-of a missing profile. No installation was attempted on an Arch workstation, and
+profile; CLI tests now create a disposable home and explicitly verify rejection
+of a missing profile. Documentation and routing evaluation share one metadata
+reader with its own disposable home. The entire presubmit also passed with an
+empty caller home. No installation was attempted on an Arch workstation, and
 no Wayland GUI was visually tested. The live personal launchd browsers were not
 redeployed during this refactor.

@@ -7,11 +7,10 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import {Client} from '@modelcontextprotocol/sdk/client/index.js';
-import {StdioClientTransport} from '@modelcontextprotocol/sdk/client/stdio.js';
 import type {Tool} from '@modelcontextprotocol/sdk/types.js';
 
-const MCP_SERVER_PATH = 'build/src/index.js';
+import {loadMcpMetadata} from './mcp-metadata.js';
+import type {McpMetadata} from './mcp-metadata.js';
 const CORPUS_PATH = 'evals/tool-routing.json';
 const EXPECTED_TOOL_COUNT = 24;
 const MIN_CASES = 20;
@@ -70,11 +69,6 @@ interface RoutingCorpus {
 interface ToolCall {
   name: string;
   arguments: JsonObject;
-}
-
-interface McpMetadata {
-  tools: Tool[];
-  instructions: string;
 }
 
 function isObject(value: unknown): value is JsonObject {
@@ -184,48 +178,6 @@ async function readCorpus(): Promise<RoutingCorpus> {
     expectedToolCount: parsed.expectedToolCount as number,
     cases,
   };
-}
-
-async function loadMcpMetadata(): Promise<McpMetadata> {
-  const serverPath = path.resolve(MCP_SERVER_PATH);
-  try {
-    await fs.access(serverPath);
-  } catch {
-    throw new Error(
-      `${MCP_SERVER_PATH} was not found. Run npm run build before this script.`,
-    );
-  }
-
-  const transport = new StdioClientTransport({
-    command: process.execPath,
-    args: [serverPath],
-    // The transport's default allowlist already prevents eval credentials from
-    // reaching the child. Consume stderr without echoing local paths or logs.
-    stderr: 'pipe',
-  });
-  transport.stderr?.on('data', () => undefined);
-  const client = new Client(
-    {name: 'tool-routing-evaluator', version: '1.0.0'},
-    {capabilities: {}},
-  );
-
-  try {
-    await client.connect(transport);
-    const tools: Tool[] = [];
-    let cursor: string | undefined;
-    do {
-      const result = await client.listTools(cursor ? {cursor} : undefined);
-      tools.push(...(result.tools as Tool[]));
-      cursor = result.nextCursor;
-    } while (cursor);
-
-    return {
-      tools,
-      instructions: client.getInstructions()?.trim() ?? '',
-    };
-  } finally {
-    await client.close().catch(() => undefined);
-  }
 }
 
 function schemaFor(tool: Tool): JsonSchema {

@@ -5,14 +5,7 @@
  */
 
 import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
 
-import {Client} from '@modelcontextprotocol/sdk/client/index.js';
-import {
-  getDefaultEnvironment,
-  StdioClientTransport,
-} from '@modelcontextprotocol/sdk/client/stdio.js';
 import type {Tool} from '@modelcontextprotocol/sdk/types.js';
 import prettier from 'prettier';
 
@@ -20,7 +13,7 @@ import {cliOptions} from '../src/cli.js';
 import type {YargsOptions} from '../src/third_party/index.js';
 import {ToolCategory, labels} from '../src/tools/categories.js';
 
-const MCP_SERVER_PATH = 'build/src/index.js';
+import {loadMcpMetadata} from './mcp-metadata.js';
 const OUTPUT_PATH = './docs/tool-reference.md';
 const README_PATH = './README.md';
 const README_EN_PATH = './README_en.md';
@@ -145,35 +138,8 @@ function updateReadmeToolCount(filePath: string, toolCount: number): void {
 async function generateToolDocumentation(): Promise<void> {
   console.log('Starting MCP server to query tool definitions...');
 
-  // Schema queries never launch Chrome. Give legacy startup validation its own
-  // disposable marker instead of depending on a contributor's browser identity.
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'js-reverse-docs-'));
-  const profile = path.join(home, '.local/share/js-reverse-mcp/active-profile');
-  fs.mkdirSync(path.join(profile, 'Default'), {recursive: true});
-  fs.writeFileSync(path.join(profile, 'Default/Preferences'), '{}');
-  const transport = new StdioClientTransport({
-    command: process.execPath,
-    args: [MCP_SERVER_PATH],
-    env: {...getDefaultEnvironment(), HOME: home, USERPROFILE: home},
-  });
-
-  const client = new Client(
-    {
-      name: 'docs-generator',
-      version: '1.0.0',
-    },
-    {
-      capabilities: {},
-    },
-  );
-
   try {
-    // Connect to the server
-    await client.connect(transport);
-    console.log('Connected to MCP server');
-
-    // List all available tools
-    const {tools} = await client.listTools();
+    const {tools} = await loadMcpMetadata();
     const toolsWithAnnotations = tools as ToolWithAnnotations[];
     console.log(`Found ${tools.length} tools`);
 
@@ -317,14 +283,9 @@ content is kept for human-readable compatibility.
 
     updateReadmeToolCount(README_PATH, toolsWithAnnotations.length);
     updateReadmeToolCount(README_EN_PATH, toolsWithAnnotations.length);
-
-    await client.close();
   } catch (error) {
     console.error('Error generating documentation:', error);
-    await client.close().catch(() => undefined);
     throw error;
-  } finally {
-    fs.rmSync(home, {recursive: true, force: true});
   }
 }
 
